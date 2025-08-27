@@ -1,5 +1,6 @@
 function LinkedList() {
   let headNode = null;
+  let size = 0;
   const prepend = (key, value) => {
     const newNode = Node(key, value);
     if (!headNode) {
@@ -8,6 +9,7 @@ function LinkedList() {
       newNode.nextNode = headNode;
       headNode = newNode;
     }
+    size++;
   };
   const getSize = () => {
     let count = 0;
@@ -19,7 +21,7 @@ function LinkedList() {
     return count;
   };
   const at = (n) => {
-    if (n >= getSize() || n < 0) {
+    if (n >= size || n < 0) {
       return undefined;
     }
     let currentNode = headNode;
@@ -31,34 +33,32 @@ function LinkedList() {
     }
   };
   const append = (key, value) => {
-    const size = getSize();
     const newNode = Node(key, value);
     if (!size) {
       headNode = newNode;
-      return;
+    } else {
+      at(size - 1).nextNode = newNode;
     }
-    at(size - 1).nextNode = newNode;
+    size++;
   };
   const pop = () => {
-    const size = getSize();
     if (!size) return;
     if (size === 1) {
       headNode = null;
-      return;
+    } else {
+      let target = at(size - 2);
+      target.nextNode = null;
     }
-    let target = at(size - 2);
-    target.nextNode = null;
+    size--;
   };
   const toString = () => {
-    const size = getSize();
     let result = "";
     for (let i = 0; i < size; i++) {
-      result += `( ${at(i).value} ) -> `;
+      result += `( ${at(i).key}  ${at(i).value}) -> `;
     }
     return result + "null";
   };
-  const contains = (key) => {
-    const size = getSize();
+  const containsKey = (key) => {
     for (let i = 0; i < size; i++) {
       if (at(i).key === key) {
         return true;
@@ -67,7 +67,6 @@ function LinkedList() {
     return false;
   };
   const find = (key) => {
-    const size = getSize();
     for (let i = 0; i < size; i++) {
       if (at(i).key === key) {
         return i;
@@ -76,27 +75,36 @@ function LinkedList() {
     return null;
   };
   const insertAt = (key, value, index) => {
+    if (index < 0) {
+      console.error("Fatal Error: Invalid index, exiting.");
+      return;
+    }
     const newNode = Node(key, value);
     if (!headNode) {
       headNode = newNode;
+      size++;
       return;
     }
-    const size = getSize();
     const preNode = at(index - 1);
     if (at(index)) {
       newNode.nextNode = at(index);
     }
     if (preNode) {
       preNode.nextNode = newNode;
+    } else if (size === 1) {
+      headNode = newNode;
     } else {
       at(size - 1).nextNode = newNode;
     }
+    size++;
   };
   const removeAt = (index) => {
     if (index === 0) {
       headNode = headNode.nextNode;
+      size--;
     } else if (at(index)) {
       at(index - 1).nextNode = at(index + 1) ? at(index + 1) : null;
+      size--;
     }
   };
 
@@ -106,7 +114,7 @@ function LinkedList() {
     at,
     pop,
     toString,
-    contains,
+    containsKey,
     find,
     insertAt,
     removeAt,
@@ -114,11 +122,11 @@ function LinkedList() {
       return headNode;
     },
     get tail() {
-      const v = at(getSize() - 1);
+      const v = at(size - 1);
       return v ? v : null;
     },
     get size() {
-      return getSize();
+      return size;
     },
   };
 }
@@ -130,7 +138,19 @@ function Node(key, value) {
 let loadFactor = 3 / 4;
 function HashMap() {
   const buckets = new Array(16);
-  const getGrow = () => buckets.length * loadFactor;
+  const getGrowNum = () => buckets.length * loadFactor;
+  const length = () => {
+    let count = 0;
+    for (const buk of buckets) {
+      if (buk) {
+        count += buk.getSize();
+      }
+    }
+    return count;
+  };
+  const clear = () => {
+    buckets.fill();
+  };
   function hash(key) {
     let hashCode = 0;
 
