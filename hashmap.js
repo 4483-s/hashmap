@@ -1,58 +1,3 @@
-const linkedList = (function () {
-  //accept a head node of a linked list, if head is falsy, return 0
-  const getSize = (head) => {
-    let count = 0;
-    let currentNode = head;
-    while (currentNode) {
-      count++;
-      currentNode = currentNode.nextNode;
-    }
-    return count;
-  };
-  //return the node at index n
-  const at = (head, n) => {
-    let currentNode = head;
-    for (let i = 0; i <= n; i++) {
-      if (i === n) {
-        return currentNode;
-      }
-      currentNode = currentNode.nextNode;
-    }
-  };
-  //only works if the head is a node object
-  const append = (head, newNode) => {
-    at(head, getSize(head) - 1).nextNode = newNode;
-  };
-  const findByKey = (head, key) => {
-    const size = getSize(head);
-    for (let i = 0; i < size; i++) {
-      const currentNode = at(head, i);
-      if (currentNode.key === key) {
-        return currentNode;
-      }
-    }
-    return null;
-  };
-  // not refactored
-  const find = (key) => {
-    for (let i = 0; i < size; i++) {
-      if ((head, at(i).key === key)) {
-        return i;
-      }
-    }
-    return null;
-  };
-
-  return {
-    append,
-    at,
-    getSize,
-    findByKey,
-  };
-})();
-// function Node(key, value) {
-//   return { key, value, nextNode: null };
-// }
 class Node {
   constructor(key, value) {
     this.key = key;
@@ -64,15 +9,6 @@ class Node {
     if (this.nextNode) {
       this.nextNode.forEach(callback);
     }
-  }
-  getLength() {
-    let count = 0;
-    let currentNode = this;
-    while (currentNode) {
-      count++;
-      currentNode = currentNode.nextNode;
-    }
-    return count;
   }
   append(newNode) {
     let currentNode = this;
@@ -104,17 +40,13 @@ class Node {
     }
     return false;
   }
-  get length() {
-    return this.getLength();
-  }
 }
 
-//
-let loadFactor = 3 / 4;
 // hashmap factory start
 function HashMap() {
   let buckets = new Array(16).fill(null);
   let capacity = buckets.length;
+  let loadFactor = 3 / 4;
   //utils
   //
   const getGrowNum = () => buckets.length * loadFactor;
@@ -152,7 +84,7 @@ function HashMap() {
     const newNode = new Node(key, value);
     arr[bIndex].append(newNode);
   };
-  //hash function
+  //generate bucket index for an element
   function hash(key) {
     let hashCode = 0;
     const primeNumber = 97;
@@ -160,12 +92,6 @@ function HashMap() {
       hashCode = (primeNumber * hashCode + key.charCodeAt(i)) % capacity;
     }
     return hashCode;
-  }
-  // show hashmap
-  function tempTest() {
-    for (const b of buckets) {
-      console.log(b);
-    }
   }
   //
   // HashMap methods
@@ -179,15 +105,17 @@ function HashMap() {
   //count keys in the whole hashtable
   const length = () => {
     let count = 0;
-    for (const buk of buckets) {
-      if (buk) count += buk.length;
+    for (const b of buckets) {
+      if (b)
+        b.forEach((v) => {
+          count++;
+        });
     }
     return count;
   };
   const clear = () => {
     buckets.fill(null);
   };
-  const getBucket = () => buckets;
   const values = () => {
     const arr = [];
     for (const b of buckets) {
@@ -222,33 +150,27 @@ function HashMap() {
     return arr;
   };
   const has = (key) => {
-    for (const b of buckets) {
-      if (b) {
-        const foundKey = b.find(key);
-        if (foundKey) return true;
-      }
+    const bIndex = hash(key);
+    if (buckets[bIndex]) {
+      const foundKey = buckets[bIndex].find(key);
+      return !!foundKey;
     }
     return false;
   };
   const get = (key) => {
-    for (const b of buckets) {
-      if (b) {
-        const foundKey = b.find(key);
-        if (foundKey) {
-          return foundKey.value;
-        }
-      }
+    const bIndex = hash(key);
+    if (buckets[bIndex]) {
+      const result = buckets[bIndex].find(key);
+      return result ? result.value : null;
     }
-    return null;
   };
   const remove = (key) => {
-    for (let i = 0; i < buckets.length; i++) {
-      if (buckets[i]) {
-        const result = buckets[i].removeByKey(key);
-        if (typeof result === "object") {
-          buckets[i] = result;
-          return true;
-        }
+    const bIndex = hash(key);
+    if (buckets[bIndex]) {
+      const result = buckets[bIndex].removeByKey(key);
+      if (typeof result === "object") {
+        buckets[bIndex] = result;
+        return true;
       }
     }
     return false;
@@ -258,9 +180,7 @@ function HashMap() {
     hash,
     clear,
     set,
-    tempTest,
     length,
-    getBucket,
     get,
     has,
     values,
@@ -268,7 +188,16 @@ function HashMap() {
     keys,
   };
 }
-let m = HashMap();
-for (let i = 0; i < 30; i++) {
-  m.set(`${Math.random() * 100}`, `${Math.random() * 700}`);
-}
+let test = HashMap();
+test.set("apple", "red");
+test.set("banana", "yellow");
+test.set("carrot", "orange");
+test.set("dog", "brown");
+test.set("elephant", "gray");
+test.set("frog", "green");
+test.set("grape", "purple");
+test.set("hat", "black");
+test.set("ice cream", "white");
+test.set("jacket", "blue");
+test.set("kite", "pink");
+test.set("lion", "golden");
